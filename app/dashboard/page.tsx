@@ -2,6 +2,9 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { getMonthSummary } from "@/lib/actions/dashboard";
+import { getRecurringExpenses } from "@/lib/actions/recurring";
+import { getInstallments } from "@/lib/actions/installments";
+import { isRecurringDueInMonth, frequencyLabels } from "@/lib/recurring";
 import { getCurrentYearMonth, formatYearMonth } from "@/lib/date";
 import { formatBRL } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -14,6 +17,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Repeat, Landmark } from "lucide-react";
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -21,16 +26,24 @@ export default async function DashboardPage() {
   const userId = session?.user?.id;
 
   const yearMonth = getCurrentYearMonth();
-  const summary = userId
-    ? await getMonthSummary(userId, yearMonth)
-    : {
-        expectedIncome: 0,
-        receivedIncome: 0,
-        totalExpenses: 0,
-        totalPlanned: 0,
-        buckets: [],
-        upcomingObligations: 0,
-      };
+  const [summary, recurringList, installmentsList] = userId
+    ? await Promise.all([
+        getMonthSummary(userId, yearMonth),
+        getRecurringExpenses(userId),
+        getInstallments(userId),
+      ])
+    : [
+        {
+          expectedIncome: 0,
+          receivedIncome: 0,
+          totalExpenses: 0,
+          totalPlanned: 0,
+          buckets: [],
+          upcomingObligations: 0,
+        },
+        [],
+        [],
+      ];
 
   const availableCash = summary.expectedIncome - summary.totalExpenses;
 
@@ -79,11 +92,13 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Upcoming Obligations</CardDescription>
-            <CardTitle className="font-mono text-2xl">R$ 0,00</CardTitle>
+            <CardTitle className="font-mono text-2xl">
+              {formatBRL(summary.upcomingObligations)}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              Recurring & installments come in Phase 4
+              Recurring & installments this month
             </p>
           </CardContent>
         </Card>
@@ -100,7 +115,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              Income minus obligations
+              Expected income minus recorded expenses
             </p>
           </CardContent>
         </Card>
@@ -201,6 +216,105 @@ export default async function DashboardPage() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section>
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming Obligations</CardTitle>
+            <CardDescription>
+              Recurring bills and installments coming up this month.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {summary.upcomingObligations === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
+                <Repeat className="mb-3 h-8 w-8 text-muted-foreground/60" />
+                <p className="text-sm font-medium">No upcoming obligations</p>
+                <p className="text-xs text-muted-foreground">
+                  Add recurring expenses and installments to see future
+                  commitments.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-3">
+                  <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <Repeat className="h-4 w-4" />
+                    Recurring due in {formatYearMonth(yearMonth)}
+                  </h3>
+                  <ul className="space-y-2">
+                    {recurringList
+                      .filter(
+                        (item) => item.active && isRecurringDueInMonth(item, yearMonth)
+                      )
+                      .map((item) => (
+                        <li
+                          key={item.id}
+                          className="flex items-center justify-between rounded-lg border bg-card p-3"
+                        >
+                          <div>
+                            <p className="font-medium">{item.description}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {frequencyLabels[item.frequency]} · Day{" "}
+                              {item.dayOfMonth}
+                            </p>
+                          </div>
+                          <span className="font-mono font-medium">
+                            {formatBRL(item.amount)}
+                          </span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <Landmark className="h-4 w-4" />
+                    Active installments
+                  </h3>
+                  <ul className="space-y-2">
+                    {installmentsList
+                      .filter((item) => item.active)
+                      .map((item) => {
+                        const progress =
+                          item.totalInstallments > 0
+                            ? (item.currentInstallment / item.totalInstallments) *
+                              100
+                            : 0;
+                        return (
+                          <li
+                            key={item.id}
+                            className="rounded-lg border bg-card p-3"
+                          >
+                            <div className="flex items-center justify-between">
+                              <p className="font-medium">{item.description}</p>
+                              <Badge variant="outline">
+                                {item.currentInstallment} / {item.totalInstallments}
+                              </Badge>
+                            </div>
+                            <div className="mt-2 flex items-center justify-between text-sm">
+                              <span className="font-mono">
+                                {formatBRL(item.installmentAmount)} / mo
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {formatBRL(item.remainingBalance)} left
+                              </span>
+                            </div>
+                            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+                              <div
+                                className="h-full bg-gradient-to-r from-primary to-emerald-400"
+                                style={{ width: `${Math.min(progress, 100)}%` }}
+                              />
+                            </div>
+                          </li>
+                        );
+                      })}
+                  </ul>
+                </div>
               </div>
             )}
           </CardContent>

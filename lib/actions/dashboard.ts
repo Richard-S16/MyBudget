@@ -1,6 +1,8 @@
 "use server";
 
 import { getMonthlyPlanWithBuckets, type BucketSummary } from "@/lib/actions/plans";
+import { getMonthlyRecurringTotal } from "@/lib/actions/recurring";
+import { getActiveInstallmentTotal } from "@/lib/actions/installments";
 
 export interface MonthSummary {
   expectedIncome: number;
@@ -17,12 +19,17 @@ export async function getMonthSummary(
 ): Promise<MonthSummary> {
   const plan = await getMonthlyPlanWithBuckets(userId, yearMonth);
 
+  const [recurringTotal, installmentTotal] = await Promise.all([
+    getMonthlyRecurringTotal(userId, yearMonth),
+    getActiveInstallmentTotal(userId),
+  ]);
+
   return {
     expectedIncome: plan.expectedIncome,
     receivedIncome: plan.receivedIncome,
     totalExpenses: plan.totalActual,
     totalPlanned: plan.totalPlanned,
     buckets: plan.buckets,
-    upcomingObligations: 0,
+    upcomingObligations: recurringTotal + installmentTotal,
   };
 }

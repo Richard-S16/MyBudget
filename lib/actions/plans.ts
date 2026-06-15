@@ -11,6 +11,7 @@ import {
   type CategoryType,
 } from "@/lib/db/schema";
 import { BUCKET_TYPES, bucketLabels } from "@/lib/buckets";
+import { syncRecurringExpenses } from "@/lib/actions/recurring";
 
 export interface BucketSummary {
   type: CategoryType;
@@ -45,6 +46,8 @@ export async function getOrCreateMonthlyPlan(
     .insert(monthlyPlans)
     .values({ userId, yearMonth })
     .returning();
+
+  await syncRecurringExpenses(userId, plan.id, yearMonth);
 
   return plan;
 }
