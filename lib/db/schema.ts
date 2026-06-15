@@ -8,6 +8,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -291,9 +292,7 @@ export const allocationRules = pgTable(
     monthlyPlanId: uuid("monthly_plan_id")
       .notNull()
       .references(() => monthlyPlans.id, { onDelete: "cascade" }),
-    categoryId: uuid("category_id")
-      .notNull()
-      .references(() => categories.id, { onDelete: "cascade" }),
+    type: categoryTypeEnum("type").notNull(),
     percentage: integer("percentage").default(0).notNull(),
     amount: numeric("amount", { precision: 12, scale: 2 }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -304,7 +303,10 @@ export const allocationRules = pgTable(
   },
   (table) => [
     index("allocation_rules_monthlyPlanId_idx").on(table.monthlyPlanId),
-    index("allocation_rules_categoryId_idx").on(table.categoryId),
+    uniqueIndex("allocation_rules_plan_type_idx").on(
+      table.monthlyPlanId,
+      table.type
+    ),
   ]
 );
 
@@ -312,7 +314,6 @@ export const categoriesRelations = relations(categories, ({ one, many }) => ({
   user: one(user, { fields: [categories.userId], references: [user.id] }),
   expenses: many(expenses),
   recurringExpenses: many(recurringExpenses),
-  allocationRules: many(allocationRules),
 }));
 
 export const monthlyPlansRelations = relations(
@@ -367,10 +368,6 @@ export const allocationRulesRelations = relations(
     monthlyPlan: one(monthlyPlans, {
       fields: [allocationRules.monthlyPlanId],
       references: [monthlyPlans.id],
-    }),
-    category: one(categories, {
-      fields: [allocationRules.categoryId],
-      references: [categories.id],
     }),
   })
 );

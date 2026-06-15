@@ -5,6 +5,7 @@ import { getMonthSummary } from "@/lib/actions/dashboard";
 import { getCurrentYearMonth, formatYearMonth } from "@/lib/date";
 import { formatBRL } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { bucketLabels, bucketGradients } from "@/lib/buckets";
 import {
   Card,
   CardContent,
@@ -22,7 +23,14 @@ export default async function DashboardPage() {
   const yearMonth = getCurrentYearMonth();
   const summary = userId
     ? await getMonthSummary(userId, yearMonth)
-    : { expectedIncome: 0, receivedIncome: 0, totalExpenses: 0 };
+    : {
+        expectedIncome: 0,
+        receivedIncome: 0,
+        totalExpenses: 0,
+        totalPlanned: 0,
+        buckets: [],
+        upcomingObligations: 0,
+      };
 
   const availableCash = summary.expectedIncome - summary.totalExpenses;
 
@@ -62,7 +70,9 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              Recorded expenses this month
+              {summary.totalPlanned > 0
+                ? `${formatBRL(summary.totalPlanned)} planned`
+                : "No allocation plan yet"}
             </p>
           </CardContent>
         </Card>
@@ -119,6 +129,7 @@ export default async function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
@@ -126,19 +137,72 @@ export default async function DashboardPage() {
               <CardDescription>Planned vs actual by bucket</CardDescription>
             </div>
             <Link
-              href="/dashboard/expenses"
+              href="/dashboard/plan"
               className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
             >
-              Manage expenses
+              Edit plan
             </Link>
           </CardHeader>
-          <CardContent className="h-48">
-            <div className="flex h-full flex-col items-center justify-center gap-2 rounded-md bg-muted text-sm text-muted-foreground">
-              <span className="font-mono text-2xl text-foreground">
-                {formatBRL(summary.totalExpenses)}
-              </span>
-              <span>spent this month</span>
-            </div>
+          <CardContent>
+            {summary.buckets.length === 0 || summary.totalPlanned === 0 ? (
+              <div className="flex h-48 flex-col items-center justify-center gap-2 rounded-md bg-muted text-sm text-muted-foreground">
+                <span className="font-mono text-2xl text-foreground">
+                  {formatBRL(summary.totalExpenses)}
+                </span>
+                <span>spent this month</span>
+                <span className="text-xs">Open Monthly Plan to allocate.</span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {summary.buckets.map((bucket) => {
+                  const plannedWidth =
+                    summary.expectedIncome > 0
+                      ? (bucket.planned / summary.expectedIncome) * 100
+                      : 0;
+                  const actualWidth =
+                    summary.expectedIncome > 0
+                      ? (bucket.actual / summary.expectedIncome) * 100
+                      : 0;
+
+                  return (
+                    <div key={bucket.type} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`h-2.5 w-2.5 rounded-full bg-gradient-to-r ${bucketGradients[bucket.type]}`}
+                          />
+                          <span className="font-medium">
+                            {bucketLabels[bucket.type]}
+                          </span>
+                        </div>
+                        <span
+                          className={`font-mono text-xs ${
+                            bucket.difference > 0
+                              ? "text-destructive"
+                              : bucket.difference < 0
+                                ? "text-primary"
+                                : "text-muted-foreground"
+                          }`}
+                        >
+                          {formatBRL(bucket.actual)} /{" "}
+                          {formatBRL(bucket.planned)}
+                        </span>
+                      </div>
+                      <div className="relative h-2 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className={`absolute left-0 top-0 h-full bg-gradient-to-r ${bucketGradients[bucket.type]} opacity-25`}
+                          style={{ width: `${Math.min(plannedWidth, 100)}%` }}
+                        />
+                        <div
+                          className={`absolute left-0 top-0 h-full bg-gradient-to-r ${bucketGradients[bucket.type]}`}
+                          style={{ width: `${Math.min(actualWidth, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </CardContent>
         </Card>
       </section>

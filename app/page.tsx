@@ -37,7 +37,7 @@ export default async function HomePage() {
           </div>
           <h1 className="max-w-3xl font-heading text-5xl font-semibold leading-[1.05] tracking-tight md:text-7xl">
             Plan money before{" "}
-            <span className="italic text-primary">it leaves.</span>
+            <span className="text-primary">it leaves.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl">
             MyBudget replaces your finance spreadsheet with a fast, opinionated
