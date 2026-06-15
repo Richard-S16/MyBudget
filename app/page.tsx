@@ -33,7 +33,7 @@ export default async function HomePage() {
         {/* Hero */}
         <section className="flex flex-1 flex-col items-center justify-center px-6 py-20 text-center md:py-32">
           <div className="mb-6 inline-flex items-center rounded-full border bg-card px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm">
-            Phase 1 — Foundation live
+            Phase 2 — Income & Expenses live
           </div>
           <h1 className="max-w-3xl font-heading text-5xl font-semibold leading-[1.05] tracking-tight md:text-7xl">
             Plan money before{" "}

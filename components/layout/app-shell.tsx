@@ -10,6 +10,7 @@ import {
   Menu,
   Receipt,
   Repeat,
+  Tag,
   Wallet,
 } from "lucide-react";
 import { UserButton } from "@/components/auth/user-button";
@@ -28,6 +29,7 @@ const navItems = [
   { href: "/dashboard/plan", label: "Monthly Plan", icon: CalendarDays },
   { href: "/dashboard/income", label: "Income", icon: Wallet },
   { href: "/dashboard/expenses", label: "Expenses", icon: Receipt },
+  { href: "/dashboard/categories", label: "Categories", icon: Tag },
   { href: "/dashboard/recurring", label: "Recurring", icon: Repeat },
   { href: "/dashboard/installments", label: "Installments", icon: Landmark },
   { href: "/dashboard/reports", label: "Reports", icon: BarChart3 },

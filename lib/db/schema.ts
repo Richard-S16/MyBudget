@@ -125,6 +125,8 @@ export const categoryTypeEnum = pgEnum("category_type", [
   "free_spending",
 ]);
 
+export type CategoryType = typeof categoryTypeEnum.enumValues[number];
+
 export const categories = pgTable(
   "categories",
   {

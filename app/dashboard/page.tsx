@@ -1,5 +1,10 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { auth } from "@/lib/auth";
+import { getMonthSummary } from "@/lib/actions/dashboard";
+import { getCurrentYearMonth, formatYearMonth } from "@/lib/date";
+import { formatBRL } from "@/lib/money";
+import { cn } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -7,10 +12,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() });
   const firstName = session?.user?.name?.split(" ")[0] ?? "there";
+  const userId = session?.user?.id;
+
+  const yearMonth = getCurrentYearMonth();
+  const summary = userId
+    ? await getMonthSummary(userId, yearMonth)
+    : { expectedIncome: 0, receivedIncome: 0, totalExpenses: 0 };
+
+  const availableCash = summary.expectedIncome - summary.totalExpenses;
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -19,7 +33,7 @@ export default async function DashboardPage() {
           Hello, {firstName}
         </h1>
         <p className="text-lg text-muted-foreground">
-          Here is your financial picture for this month.
+          {formatYearMonth(yearMonth)} — your financial picture at a glance.
         </p>
       </header>
 
@@ -27,20 +41,28 @@ export default async function DashboardPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Expected Income</CardDescription>
-            <CardTitle className="font-mono text-2xl">R$ 0,00</CardTitle>
+            <CardTitle className="font-mono text-2xl">
+              {formatBRL(summary.expectedIncome)}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-xs text-muted-foreground">No income recorded yet</p>
+            <p className="text-xs text-muted-foreground">
+              {summary.expectedIncome > 0
+                ? "Money planned to arrive"
+                : "No income recorded yet"}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Money Allocated</CardDescription>
-            <CardTitle className="font-mono text-2xl">R$ 0,00</CardTitle>
+            <CardTitle className="font-mono text-2xl">
+              {formatBRL(summary.totalExpenses)}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              Set up your monthly plan
+              Recorded expenses this month
             </p>
           </CardContent>
         </Card>
@@ -51,15 +73,19 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
-              Recurring & installments
+              Recurring & installments come in Phase 4
             </p>
           </CardContent>
         </Card>
         <Card className="border-primary/50">
           <CardHeader className="pb-2">
             <CardDescription>Available Cash</CardDescription>
-            <CardTitle className="font-mono text-2xl text-primary">
-              R$ 0,00
+            <CardTitle
+              className={`font-mono text-2xl ${
+                availableCash >= 0 ? "text-primary" : "text-destructive"
+              }`}
+            >
+              {formatBRL(availableCash)}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -72,24 +98,46 @@ export default async function DashboardPage() {
 
       <section className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader>
-            <CardTitle>Money In</CardTitle>
-            <CardDescription>Expected vs received income</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Money In</CardTitle>
+              <CardDescription>Expected vs received income</CardDescription>
+            </div>
+            <Link
+              href="/dashboard/income"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+            >
+              Manage income
+            </Link>
           </CardHeader>
           <CardContent className="h-48">
-            <div className="flex h-full items-center justify-center rounded-md bg-muted text-sm text-muted-foreground">
-              Income chart coming in Phase 2
+            <div className="flex h-full flex-col items-center justify-center gap-2 rounded-md bg-muted text-sm text-muted-foreground">
+              <span className="font-mono text-2xl text-foreground">
+                {formatBRL(summary.receivedIncome)}
+              </span>
+              <span>received of {formatBRL(summary.expectedIncome)}</span>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
-            <CardTitle>Money Allocated</CardTitle>
-            <CardDescription>Planned vs actual by bucket</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Money Allocated</CardTitle>
+              <CardDescription>Planned vs actual by bucket</CardDescription>
+            </div>
+            <Link
+              href="/dashboard/expenses"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+            >
+              Manage expenses
+            </Link>
           </CardHeader>
           <CardContent className="h-48">
-            <div className="flex h-full items-center justify-center rounded-md bg-muted text-sm text-muted-foreground">
-              Allocation chart coming in Phase 3
+            <div className="flex h-full flex-col items-center justify-center gap-2 rounded-md bg-muted text-sm text-muted-foreground">
+              <span className="font-mono text-2xl text-foreground">
+                {formatBRL(summary.totalExpenses)}
+              </span>
+              <span>spent this month</span>
             </div>
           </CardContent>
         </Card>

@@ -37,16 +37,18 @@ export function UserButton({ user }: UserButtonProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-          <Avatar className="h-9 w-9">
-            <AvatarImage src={user.image ?? undefined} alt={user.name ?? ""} />
-            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+            <Avatar className="h-9 w-9">
+              <AvatarImage src={user.image ?? undefined} alt={user.name ?? ""} />
+              <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          </Button>
+        }
+      />
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel>
           <p className="font-heading text-sm">{user.name}</p>
