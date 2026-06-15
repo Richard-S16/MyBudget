@@ -1,2 +1,2 @@
 # MyBudget
-MyBudget is a personal finance web application designed for professionals who currently manage their finances through spreadsheets and want a better way to track income, expenses, recurring bills, installments, budgeting, and cash flow planning.
+MyBudget is a personal cash-flow and money-allocation system designed to replace spreadsheets and help its owner make better financial decisions with minimal friction.
