@@ -12,6 +12,7 @@ import {
   Repeat,
   Tag,
   Wallet,
+  Waves,
 } from "lucide-react";
 import { UserButton } from "@/components/auth/user-button";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/cashflow", label: "Cash Flow", icon: Waves },
   { href: "/dashboard/plan", label: "Monthly Plan", icon: CalendarDays },
   { href: "/dashboard/income", label: "Income", icon: Wallet },
   { href: "/dashboard/expenses", label: "Expenses", icon: Receipt },
