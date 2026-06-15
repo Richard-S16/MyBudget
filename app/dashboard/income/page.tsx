@@ -140,7 +140,7 @@ export default async function IncomePage() {
             Expected and received income for this month.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           {incomeList.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
               <Wallet className="mb-3 h-8 w-8 text-muted-foreground/60" />

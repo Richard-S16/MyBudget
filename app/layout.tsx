@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Syne, Sora, DM_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -22,6 +22,16 @@ const dmMono = DM_Mono({
   display: "swap",
   weight: ["400", "500"],
 });
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f7f6f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#17161f" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: "MyBudget — Plan money before it leaves",

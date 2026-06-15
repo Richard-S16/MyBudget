@@ -8,6 +8,7 @@ import {
   Landmark,
   LayoutDashboard,
   Menu,
+  Plus,
   Receipt,
   Repeat,
   Tag,
@@ -100,6 +101,13 @@ export function AppShell({ children, user }: AppShellProps) {
           MyBudget
         </Link>
         <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/quick"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground md:hidden"
+          >
+            <Plus className="h-5 w-5" />
+            <span className="sr-only">Quick entry</span>
+          </Link>
           <UserButton user={user} />
           <Sheet>
             <SheetTrigger

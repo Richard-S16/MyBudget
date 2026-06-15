@@ -169,7 +169,7 @@ export default async function ExpensesPage() {
             All expenses recorded for this month.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           {expenseList.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
               <Receipt className="mb-3 h-8 w-8 text-muted-foreground/60" />

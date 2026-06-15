@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { AppShell } from "@/components/layout/app-shell";
+import { BiometricGate } from "@/components/auth/biometric-gate";
 
 export default async function DashboardLayout({
   children,
@@ -22,8 +23,8 @@ export default async function DashboardLayout({
   }
 
   return (
-    <AppShell user={session.user}>
-      {children}
-    </AppShell>
+    <BiometricGate>
+      <AppShell user={session.user}>{children}</AppShell>
+    </BiometricGate>
   );
 }

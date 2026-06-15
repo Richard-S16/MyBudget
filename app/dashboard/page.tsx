@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Repeat, Landmark } from "lucide-react";
+import { Repeat, Landmark, Plus } from "lucide-react";
 
 export default async function DashboardPage() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -320,6 +320,16 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </section>
+      <Link
+        href="/dashboard/quick"
+        className={cn(
+          buttonVariants({ variant: "default", size: "icon-lg" }),
+          "fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full shadow-lg md:hidden"
+        )}
+      >
+        <Plus className="h-6 w-6" />
+        <span className="sr-only">Quick entry</span>
+      </Link>
     </div>
   );
 }
